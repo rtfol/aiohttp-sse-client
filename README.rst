@@ -20,10 +20,10 @@ SSE Client
 
 
 
-A Server-Sent Event python client base on aiohttp, provides a simple interface to process [Server-Sent Event](https://www.w3.org/TR/eventsource).
+A Server-Sent Event python client base on aiohttp, provides a simple interface to process `Server-Sent Event <https://www.w3.org/TR/eventsource>`_.
 
-This project was inspired by [aiosseclient](https://github.com/ebraminio/aiosseclient),
-[sseclient](https://github.com/btubbs/sseclient), and [sseclient-py](https://github.com/mpetazzoni/sseclient).
+This project was inspired by `aiosseclient <https://github.com/ebraminio/aiosseclient>`_,
+`sseclient <https://github.com/btubbs/sseclient>`_, and `sseclient-py <https://github.com/mpetazzoni/sseclient>`_.
 
 
 * Free software: MIT license
