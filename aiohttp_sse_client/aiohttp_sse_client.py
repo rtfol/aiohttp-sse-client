@@ -114,7 +114,11 @@ class EventSource:
         """Return ready state."""
         return self._ready_state
 
-    async def process(self):
+    def __aiter__(self):
+        """Return"""
+        return self
+
+    async def __anext__(self) -> MessageEvent:
         """Process events"""
         if not self._response:
             raise ValueError
@@ -128,7 +132,7 @@ class EventSource:
                 # empty line
                 event = self._dispatch_event()
                 if event is not None:
-                    yield event
+                    return event
                 continue
 
             if line[0] == ':':
