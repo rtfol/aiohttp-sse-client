@@ -1,40 +1,27 @@
-# Config file for automatic testing at travis-ci.org
 sudo: false
-
 matrix:
   fast_finish: true
   include:
-    - python: "3.5.3"
-      env: TOXENV=py35
-    - python: "3.6"
-      env: TOXENV=py36
-    - python: "3.7"
-      env: TOXENV=py37
-      dist: xenial
-      sudo: true
-
+  - python: 3.5.3
+    env: TOXENV=py35
+  - python: '3.6'
+    env: TOXENV=py36
+  - python: '3.7'
+    env: TOXENV=py37
+    dist: xenial
+    sudo: true
 cache:
   directories:
-    - $HOME/.cache/pip
-
+  - "$HOME/.cache/pip"
 language: python
-
-# Command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install: pip install -U tox-travis
-
-# Command to run tests, e.g. python setup.py test
 script: travis_wait 30 tox --develop
-
-# Assuming you have installed the travis-ci CLI tool, after you
-# create the Github repo and add it to Travis, run the
-# following command to finish PyPI deployment setup:
-# $ travis encrypt --add deploy.password
 deploy:
   provider: pypi
   distributions: sdist bdist_wheel
   user: awarecan
   password:
-    secure: PLEASE_REPLACE_ME
+    secure: v2hnrIGIwb5y+JTa+1hAEdOTxIMsati84JCpHx5LWR2JthFguHO6jzg2w2tp8U+Z128HlADJp/+AIaDQafcy8Ikxt72+uzxZZK68+lZum7qSF5iwlT1oXdPFINpIS4wz960NhvgIMRye+TIALWm42IjK7BejLi8DGehBYcBoq3gW+EGsEokANs23sxxCl1x+TYYqwurItg83m0qTcp54G+Q2IqrB217yaetLiUE3PiEJ8jnRDro2XbGVmd2XjLillFqNgNOaQaqWijJ3HPr7OnlcSERceGNDg6LMZ6zgaBdHQPOVQPnDVwCo+M0uHp/6mTWJseUEFzaEEOEJtEzkpo1iHVnvKIFLIzqF49DtuG7OUJB2XGGUG29OxECYM9z8TiR1uF4SWLW5q9BjDOPj+XKdi0cA/1RVc2LkoJ+apkQ/5ARei754cg1oGiR4199VXWjWrWDACJ0xghhRj4Ll73Vk2nLnutLsfYkOJP1EVhoqES3SwBFCBZIlHdxjHLTUQbTkQykHsYn6RK02WRh6IdsjaAWY2NacEyKnMa1L7elmpbUYVIUWKk0iSedRsvSo8ECLBK0ljuUo3PjRlgP3UrmRzXeCBj484J93iOcam/AedeOFj+185DRTQceL6R90EUieKk3TE0a6upPJNtxg+3vfgm5nvpvX35FFMsKYRfY=
   on:
     tags: true
     repo: rtfol/aiohttp-sse-client
