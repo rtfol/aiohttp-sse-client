@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Main module."""
+import asyncio
 import logging
 from datetime import timedelta
 from typing import Optional, Dict, Any
@@ -14,6 +15,8 @@ READY_STATE_OPEN = 1
 READY_STATE_CLOSED = 2
 
 DEFAULT_RECONNECTION_TIME = timedelta(seconds=5)
+DEFAULT_MAX_CONNECT_RETRY = 5
+DEFAULT_MAX_READ_RETRY = 10
 
 CONTENT_TYPE_EVENT_STREAM = 'text/event-stream'
 
@@ -42,7 +45,11 @@ class EventSource:
     def __init__(self, url: str,
                  option: Optional[Dict[str, Any]] = None,
                  reconnection_time: timedelta = DEFAULT_RECONNECTION_TIME,
+                 max_connect_retry: int = DEFAULT_MAX_CONNECT_RETRY,
                  session: Optional[ClientSession] = None,
+                 on_open = None,
+                 on_message = None,
+                 on_error = None,
                  **kwargs):
         """Construct EventSource instance.
 
@@ -54,6 +61,9 @@ class EventSource:
             connection broken
         :param session: specifies a aiohttp.ClientSession, if not, create
             a default ClientSession
+        :param on_open: event handler for open event
+        :param on_message: event handler for message event
+        :param on_error: event handler for error event
         """
         self._url = URL(url)
         if option is not None:
@@ -68,8 +78,13 @@ class EventSource:
         else:
             self._session = ClientSession()
             self._need_close_session = True
+        
+        self._on_open = on_open
+        self._on_message = on_message
+        self._on_error = on_error
 
         self._reconnection_time = reconnection_time
+        self._max_connect_retry = max_connect_retry
         self._last_event_id = ''
         self._kwargs = kwargs or {'headers': MultiDict()}
 
@@ -90,11 +105,12 @@ class EventSource:
 
     async def __aenter__(self) -> 'EventSource':
         """Connect and listen Server-Sent Event."""
-        await self._connect()
+        await self.connect(self._max_connect_retry)
         return self
 
     async def __aexit__(self, *exc):
-        """Close connection."""
+        """Close connection and session if need."""
+        await self.close()
         if self._need_close_session:
             await self._session.close()
         pass
@@ -148,9 +164,9 @@ class EventSource:
             else:
                 self._process_field(line, '')
 
-    async def _connect(self):
+    async def connect(self, retry=0):
         """Connect to resource."""
-        _LOGGER.debug('_connect')
+        _LOGGER.debug('connect')
         headers = self._kwargs['headers']
 
         # For HTTP connections, the Accept header may be included;
@@ -163,36 +179,76 @@ class EventSource:
         # then a Last-Event-ID HTTP header must be included with the request,
         # whose value is the value of the event source's last event ID string,
         # encoded as UTF-8.
-        headers['Last-Event_ID'] = self._last_event_id
+        if self._last_event_id != '':
+            headers['Last-Event_ID'] = self._last_event_id
 
         # User agents should use the Cache-Control: no-cache header in
         # requests to bypass any caches for requests of event sources.
         headers[hdrs.CACHE_CONTROL] = 'no-cache'
 
         response = await self._session.get(self._url, **self._kwargs)
-        if response.status >= 400:
-            # TODO: error handle
-            _LOGGER.error('fetch %s failed: %s', self._url, response.status)
-            return
-        # if response.headers.get(hdrs.CONTENT_TYPE) != \
-        #         CONTENT_TYPE_EVENT_STREAM:
-        #     # TODO: error handle
-        #     _LOGGER.error(
-        #         'fetch %s failed with wrong Content-Type: %s', self._url,
-        #         response.headers.get(hdrs.CONTENT_TYPE))
-        #     return
+        if response.status >= 400 or response.status == 305:
+            error_message = 'fetch {} failed: {}'.format(
+                self._url, response.status)
+            _LOGGER.error(error_message)
+            
+            if response.status in [500, 502, 503]:
+                if retry <= 0 or self._ready_state == READY_STATE_CLOSED:
+                    self._fail_connect()
+                    raise ConnectionError(error_message)
+                else:
+                    self._ready_state = READY_STATE_CONNECTING
+                    if self._on_error:
+                        self._on_error()
+                    self._reconnection_time *= 2
+                    _LOGGER.debug('wait %s seconds for retry',
+                                  self._reconnection_time)
+                    await asyncio.sleep(self._reconnection_time)
+                    await self.connect(retry - 1)
+                return
+
+            self._fail_connect()
+
+            if response.status in [305, 401, 407]:
+                raise ConnectionRefusedError(error_message)
+            raise ConnectionError(error_message)
+
+        if response.content_type != CONTENT_TYPE_EVENT_STREAM:
+            error_message = \
+              'fetch {} failed with wrong Content-Type: {}'.format(
+                  self._url, response.headers.get(hdrs.CONTENT_TYPE))
+            _LOGGER.error(error_message)
+            
+            self._fail_connect()
+            raise ConnectionAbortedError(error_message)
 
         await self._connected()
 
         self._response = response
         self._origin = str(response.real_url.origin())
 
+    async def close(self):
+        """Close connection."""
+        _LOGGER.debug('close')
+        self._ready_state = READY_STATE_CLOSED
+        if self._response is not None:
+            self._response.close()
+            self._response = None
+
     async def _connected(self):
         """Announce the connection is made."""
         if self._ready_state != READY_STATE_CLOSED:
             self._ready_state = READY_STATE_OPEN
-            # TODO: fire open event
-            _LOGGER.debug('open event')
+            if self._on_open:
+                self._on_open()
+        pass
+
+    async def _fail_connect(self):
+        """Announce the connection is failed."""
+        if self._ready_state != READY_STATE_CLOSED:
+            self._ready_state = READY_STATE_CLOSED
+            if self._on_error:
+                self._on_error()
         pass
 
     def _dispatch_event(self):
@@ -212,8 +268,9 @@ class EventSource:
             origin=self._origin,
             last_event_id=self._last_event_id
         )
-        # TODO: fire event
         _LOGGER.debug(message)
+        if self._on_message:
+            self._on_message(message)
 
         self._event_type = ''
         self._event_data = ''

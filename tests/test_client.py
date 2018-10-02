@@ -3,7 +3,7 @@
 """Tests for `aiohttp_sse_client` package."""
 import json
 
-from aiohttp_sse_client import aiohttp_sse_client as sse_client
+from aiohttp_sse_client import client as sse_client
 
 
 async def test_basic_usage():
