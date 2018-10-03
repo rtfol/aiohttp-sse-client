@@ -84,6 +84,7 @@ class EventSource:
         self._on_error = on_error
 
         self._reconnection_time = reconnection_time
+        self._orginal_reconnection_time = reconnection_time
         self._max_connect_retry = max_connect_retry
         self._last_event_id = ''
         self._kwargs = kwargs or {'headers': MultiDict()}
@@ -140,29 +141,40 @@ class EventSource:
             raise ValueError
 
         # async for ... in StreamReader only split line by \n
-        async for line_in_bytes in self._response.content:
-            line = line_in_bytes.decode('utf8')  # type: str
-            line = line.rstrip('\n').rstrip('\r')
-
-            if line == '':
-                # empty line
-                event = self._dispatch_event()
-                if event is not None:
-                    return event
-                continue
-
-            if line[0] == ':':
-                # comment line, ignore
-                continue
-
-            if ':' in line:
-                # contains ':'
-                fields = line.split(':', 1)
-                field_name = fields[0]
-                field_value = fields[1].lstrip(' ')
-                self._process_field(field_name, field_value)
-            else:
-                self._process_field(line, '')
+        while self._response.status != 204:
+            async for line_in_bytes in self._response.content:
+                line = line_in_bytes.decode('utf8')  # type: str
+                line = line.rstrip('\n').rstrip('\r')
+    
+                if line == '':
+                    # empty line
+                    event = self._dispatch_event()
+                    if event is not None:
+                        return event
+                    continue
+    
+                if line[0] == ':':
+                    # comment line, ignore
+                    continue
+    
+                if ':' in line:
+                    # contains ':'
+                    fields = line.split(':', 1)
+                    field_name = fields[0]
+                    field_value = fields[1].lstrip(' ')
+                    self._process_field(field_name, field_value)
+                else:
+                    self._process_field(line, '')
+            self._ready_state = READY_STATE_CONNECTING
+            if self._on_error:
+                self._on_error()
+            self._reconnection_time *= 2
+            _LOGGER.debug('wait %s seconds for retry',
+                          self._reconnection_time.total_seconds())
+            await asyncio.sleep(
+                self._reconnection_time.total_seconds())
+            await self.connect()
+        raise StopAsyncIteration
 
     async def connect(self, retry=0):
         """Connect to resource."""
@@ -187,6 +199,11 @@ class EventSource:
         headers[hdrs.CACHE_CONTROL] = 'no-cache'
 
         response = await self._session.get(self._url, **self._kwargs)
+        if response.status == 204:
+            _LOGGER.debug('no more content, stop')
+            self._response = response
+            return
+
         if response.status >= 400 or response.status == 305:
             error_message = 'fetch {} failed: {}'.format(
                 self._url, response.status)
@@ -202,8 +219,9 @@ class EventSource:
                         self._on_error()
                     self._reconnection_time *= 2
                     _LOGGER.debug('wait %s seconds for retry',
-                                  self._reconnection_time)
-                    await asyncio.sleep(self._reconnection_time)
+                                  self._reconnection_time.total_seconds())
+                    await asyncio.sleep(
+                        self._reconnection_time.total_seconds())
                     await self.connect(retry - 1)
                 return
 
@@ -241,7 +259,7 @@ class EventSource:
             self._ready_state = READY_STATE_OPEN
             if self._on_open:
                 self._on_open()
-        pass
+        self._reconnection_time = self._orginal_reconnection_time
 
     async def _fail_connect(self):
         """Announce the connection is failed."""
