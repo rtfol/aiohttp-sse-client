@@ -1,15 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Tests against web-platform-tests eventsource test suite.
-
-..seealso: https://github.com/web-platform-tests/wpt/tree/master/eventsource
-"""
 from datetime import datetime, timedelta
 
 from aiohttp_sse_client import client as sse_client
 
-WPT_SERVER = 'http://www.w3c-test.org/eventsource/'
-
+from .const import WPT_SERVER
 
 async def test_event_data():
     """Test EventSource: lines and data parsing.
