@@ -7,7 +7,7 @@ SSE Client
         :target: https://pypi.python.org/pypi/aiohttp_sse_client
 
 .. image:: https://img.shields.io/travis/rtfol/aiohttp-sse-client.svg
-        :target: https://travis-ci.org/rtfol/aiohttp-sse-client
+        :target: https://travis-ci.com/rtfol/aiohttp-sse-client
 
 .. image:: https://readthedocs.org/projects/aiohttp-sse-client/badge/?version=latest
         :target: https://aiohttp-sse-client.readthedocs.io/en/latest/?badge=latest
@@ -30,11 +30,12 @@ Features
 * Full asyncio support
 * Easy to integrate with other aiohttp based project
 * Auto-reconnect for network issue
-
+* Support python 3.5.3 and above 
 
 Usage
 --------
 .. code-block:: python
+
     from aiohttp_sse_client import client as sse_client
     
     async with sse_client.EventSource(
