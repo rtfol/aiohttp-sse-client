@@ -2,6 +2,11 @@
 History
 =======
 
+0.1.3 (2018-10-03)
+------------------
+
+* Change the error handling, better fit the live specification.
+
 0.1.2 (2018-10-03)
 ------------------
 

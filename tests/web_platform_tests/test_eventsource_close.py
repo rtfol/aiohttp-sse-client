@@ -33,13 +33,13 @@ async def test_eventsource_close_reconnect():
     def on_error():
         nonlocal count, reconnected
         if count == 1:
-            assert source2.ready_state == sse_client.READY_STATE_CONNECTING
+            assert source.ready_state == sse_client.READY_STATE_CONNECTING
             reconnected = True
         elif count == 2:
-            assert source2.ready_state == sse_client.READY_STATE_CONNECTING
+            assert source.ready_state == sse_client.READY_STATE_CONNECTING
             count += 1
         elif count == 3:
-            assert source2.ready_state == sse_client.READY_STATE_CLOSED
+            assert source.ready_state == sse_client.READY_STATE_CLOSED
         else:
             assert False
     
@@ -48,14 +48,17 @@ async def test_eventsource_close_reconnect():
         str(datetime.utcnow().timestamp()),
         reconnection_time=timedelta(milliseconds=2),
         on_error=on_error
-    ) as source2:
-        async for e in source2:
-            if count == 0:
-                assert reconnected is False
-                assert e.data == "opened"
-            elif count == 1:
-                assert reconnected is True
-                assert e.data == "reconnected"
-            else:
-                assert False
-            count += 1
+    ) as source:
+        try:
+            async for e in source:
+                if count == 0:
+                    assert reconnected is False
+                    assert e.data == "opened"
+                elif count == 1:
+                    assert reconnected is True
+                    assert e.data == "reconnected"
+                else:
+                    assert False
+                count += 1
+        except ConnectionError:
+            pass

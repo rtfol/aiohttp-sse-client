@@ -6,7 +6,7 @@ from datetime import timedelta
 from typing import Optional, Dict, Any
 
 import attr
-from aiohttp import hdrs, ClientSession
+from aiohttp import hdrs, ClientSession, ClientConnectionError
 from multidict import MultiDict
 from yarl import URL
 
@@ -198,38 +198,41 @@ class EventSource:
         # requests to bypass any caches for requests of event sources.
         headers[hdrs.CACHE_CONTROL] = 'no-cache'
 
-        response = await self._session.get(self._url, **self._kwargs)
-        if response.status == 204:
-            _LOGGER.debug('no more content, stop')
-            self._response = response
+        try:
+            response = await self._session.get(self._url, **self._kwargs)
+        except ClientConnectionError:
+            if retry <= 0 or self._ready_state == READY_STATE_CLOSED:
+                await self._fail_connect()
+                raise
+            else:
+                self._ready_state = READY_STATE_CONNECTING
+                if self._on_error:
+                    self._on_error()
+                self._reconnection_time *= 2
+                _LOGGER.debug('wait %s seconds for retry',
+                              self._reconnection_time.total_seconds())
+                await asyncio.sleep(
+                    self._reconnection_time.total_seconds())
+                await self.connect(retry - 1)
             return
-
+            
         if response.status >= 400 or response.status == 305:
             error_message = 'fetch {} failed: {}'.format(
                 self._url, response.status)
             _LOGGER.error(error_message)
             
-            if response.status in [500, 502, 503]:
-                if retry <= 0 or self._ready_state == READY_STATE_CLOSED:
-                    self._fail_connect()
-                    raise ConnectionError(error_message)
-                else:
-                    self._ready_state = READY_STATE_CONNECTING
-                    if self._on_error:
-                        self._on_error()
-                    self._reconnection_time *= 2
-                    _LOGGER.debug('wait %s seconds for retry',
-                                  self._reconnection_time.total_seconds())
-                    await asyncio.sleep(
-                        self._reconnection_time.total_seconds())
-                    await self.connect(retry - 1)
-                return
-
-            self._fail_connect()
+            await self._fail_connect()
 
             if response.status in [305, 401, 407]:
                 raise ConnectionRefusedError(error_message)
             raise ConnectionError(error_message)
+
+        if response.status != 200:
+            error_message = 'fetch {} failed with wrong resposne status: {}'. \
+                format(self._url, response.status)
+            _LOGGER.error(error_message)
+            await self._fail_connect()
+            raise ConnectionAbortedError(error_message)
 
         if response.content_type != CONTENT_TYPE_EVENT_STREAM:
             error_message = \
@@ -237,9 +240,10 @@ class EventSource:
                   self._url, response.headers.get(hdrs.CONTENT_TYPE))
             _LOGGER.error(error_message)
             
-            self._fail_connect()
+            await self._fail_connect()
             raise ConnectionAbortedError(error_message)
 
+        # only status == 200 and content_type == 'text/event-stream'
         await self._connected()
 
         self._response = response
