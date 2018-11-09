@@ -23,6 +23,8 @@ If you are reporting a bug, please include:
 * Any details about your local setup that might be helpful in troubleshooting.
 * Detailed steps to reproduce the bug.
 
+Creating Bugs and Issues is currently disabled.
+
 Fix Bugs
 ~~~~~~~~
 
