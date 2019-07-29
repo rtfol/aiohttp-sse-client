@@ -9,7 +9,7 @@ from .const import WPT_SERVER
 
 async def test_eventsource_reconnect():
     """Test EventSource: reconnection.
-    
+
     ..seealso: https://github.com/web-platform-tests/wpt/blob/master/
     eventsource/eventsource-reconnect.htm
     """
@@ -24,13 +24,13 @@ async def test_eventsource_reconnect():
 
 async def test_eventsource_reconnect_event():
     """Test EventSource: reconnection event.
-    
+
     ..seealso: https://github.com/web-platform-tests/wpt/blob/master/
     eventsource/eventsource-reconnect.htm
     """
     opened  = False
     reconnected = False
-    
+
     def on_error():
         nonlocal reconnected
         assert source.ready_state == sse_client.READY_STATE_CONNECTING
@@ -50,4 +50,37 @@ async def test_eventsource_reconnect_event():
             else:
                 assert reconnected is True
                 assert e.data == "data"
+                break
+
+
+async def test_eventsource_reconnect_id():
+    """Test EventSource: reconnection id.
+
+    ..seealso: https://github.com/web-platform-tests/wpt/blob/master/
+    eventsource/eventsource-reconnect.htm
+    """
+    opened = False
+    reconnected = False
+
+    def on_error():
+        nonlocal reconnected
+        assert source.ready_state == sse_client.READY_STATE_CONNECTING
+        assert opened is True
+        reconnected = True
+
+    async with sse_client.EventSource(
+        WPT_SERVER + 'resources/last-event-id.py',
+        reconnection_time=timedelta(milliseconds=2),
+        on_error=on_error
+    ) as source:
+        async for e in source:
+            if not opened:
+                opened = True
+                assert reconnected is False
+                assert e.data == "hello"
+                last_id = e.last_event_id
+            else:
+                # When specifying an id, the data for this response will be the id used in the request
+                assert reconnected is True
+                assert e.data == last_id
                 break
