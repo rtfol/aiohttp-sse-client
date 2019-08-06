@@ -229,7 +229,7 @@ class EventSource:
             raise ConnectionError(error_message)
 
         if response.status != 200:
-            error_message = 'fetch {} failed with wrong resposne status: {}'. \
+            error_message = 'fetch {} failed with wrong response status: {}'. \
                 format(self._url, response.status)
             _LOGGER.error(error_message)
             await self._fail_connect()
@@ -308,7 +308,7 @@ class EventSource:
             self._event_data += field_value
             self._event_data += '\n'
 
-        elif field_name == 'id':
+        elif field_name == 'id' and field_value not in ('\u0000', '\x00\x00'):
             self._event_id = field_value
 
         elif field_name == 'retry':

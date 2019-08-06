@@ -2,6 +2,11 @@
 History
 =======
 
+0.1.6 (2019-08-06)
+------------------
+
+* Fix Unicode NULL handling in event id field
+
 0.1.5 (2019-08-06)
 ------------------
 
