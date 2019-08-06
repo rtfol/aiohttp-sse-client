@@ -19,6 +19,7 @@ DEFAULT_MAX_CONNECT_RETRY = 5
 DEFAULT_MAX_READ_RETRY = 10
 
 CONTENT_TYPE_EVENT_STREAM = 'text/event-stream'
+LAST_EVENT_ID_HEADER = 'Last-Event-Id'
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -78,7 +79,7 @@ class EventSource:
         else:
             self._session = ClientSession()
             self._need_close_session = True
-        
+
         self._on_open = on_open
         self._on_message = on_message
         self._on_error = on_error
@@ -145,18 +146,18 @@ class EventSource:
             async for line_in_bytes in self._response.content:
                 line = line_in_bytes.decode('utf8')  # type: str
                 line = line.rstrip('\n').rstrip('\r')
-    
+
                 if line == '':
                     # empty line
                     event = self._dispatch_event()
                     if event is not None:
                         return event
                     continue
-    
+
                 if line[0] == ':':
                     # comment line, ignore
                     continue
-    
+
                 if ':' in line:
                     # contains ':'
                     fields = line.split(':', 1)
@@ -188,11 +189,11 @@ class EventSource:
         headers[hdrs.ACCEPT] = CONTENT_TYPE_EVENT_STREAM
 
         # If the event source's last event ID string is not the empty string,
-        # then a Last-Event-ID HTTP header must be included with the request,
+        # then a Last-Event-Id HTTP header must be included with the request,
         # whose value is the value of the event source's last event ID string,
         # encoded as UTF-8.
         if self._last_event_id != '':
-            headers['Last-Event_ID'] = self._last_event_id
+            headers[LAST_EVENT_ID_HEADER] = self._last_event_id
 
         # User agents should use the Cache-Control: no-cache header in
         # requests to bypass any caches for requests of event sources.
@@ -215,12 +216,12 @@ class EventSource:
                     self._reconnection_time.total_seconds())
                 await self.connect(retry - 1)
             return
-            
+
         if response.status >= 400 or response.status == 305:
             error_message = 'fetch {} failed: {}'.format(
                 self._url, response.status)
             _LOGGER.error(error_message)
-            
+
             await self._fail_connect()
 
             if response.status in [305, 401, 407]:
@@ -239,7 +240,7 @@ class EventSource:
               'fetch {} failed with wrong Content-Type: {}'.format(
                   self._url, response.headers.get(hdrs.CONTENT_TYPE))
             _LOGGER.error(error_message)
-            
+
             await self._fail_connect()
             raise ConnectionAbortedError(error_message)
 
