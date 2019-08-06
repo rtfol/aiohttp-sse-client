@@ -48,9 +48,9 @@ class EventSource:
                  reconnection_time: timedelta = DEFAULT_RECONNECTION_TIME,
                  max_connect_retry: int = DEFAULT_MAX_CONNECT_RETRY,
                  session: Optional[ClientSession] = None,
-                 on_open = None,
-                 on_message = None,
-                 on_error = None,
+                 on_open=None,
+                 on_message=None,
+                 on_error=None,
                  **kwargs):
         """Construct EventSource instance.
 
