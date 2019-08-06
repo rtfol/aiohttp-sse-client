@@ -4,4 +4,4 @@
 
 __author__ = """Jason Hu"""
 __email__ = 'awaregit@gmail.com'
-__version__ = '0.1.5'
+__version__ = '0.1.6'
