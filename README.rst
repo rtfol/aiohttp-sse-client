@@ -6,7 +6,7 @@ SSE Client
 .. image:: https://img.shields.io/pypi/v/aiohttp_sse_client.svg
         :target: https://pypi.python.org/pypi/aiohttp_sse_client
 
-.. image:: https://img.shields.io/travis/rtfol/aiohttp-sse-client.svg
+.. image:: https://img.shields.io/travis/com/rtfol/aiohttp-sse-client.svg
         :target: https://travis-ci.com/rtfol/aiohttp-sse-client
 
 .. image:: https://readthedocs.org/projects/aiohttp-sse-client/badge/?version=latest
