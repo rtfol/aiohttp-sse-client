@@ -48,7 +48,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'SSE Client'
-copyright = u"2018, Jason Hu"
+copyright = u"2018-2019, Jason Hu"
 author = u"Jason Hu"
 
 # The version info for the project you're documenting, acts as replacement
@@ -155,7 +155,7 @@ texinfo_documents = [
      u'SSE Client Documentation',
      author,
      'aiohttp_sse_client',
-     'One line description of project.',
+     'A Server-Sent Event python client base on aiohttp, provides a simple interface to process Server-Sent Event.',
      'Miscellaneous'),
 ]
 
