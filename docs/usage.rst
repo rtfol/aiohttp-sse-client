@@ -2,7 +2,7 @@
 Usage
 =====
 
-To use SSE Client in a project::
+To use SSE Client in a project:
 
 .. code-block:: python
 
