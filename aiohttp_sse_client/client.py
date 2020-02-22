@@ -88,7 +88,9 @@ class EventSource:
         self._orginal_reconnection_time = reconnection_time
         self._max_connect_retry = max_connect_retry
         self._last_event_id = ''
-        self._kwargs = kwargs or {'headers': MultiDict()}
+        self._kwargs = kwargs
+        if 'headers' not in self._kwargs:
+            self._kwargs['headers'] = MultiDict()
 
         self._event_id = ''
         self._event_type = ''
