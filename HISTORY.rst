@@ -2,6 +2,11 @@
 History
 =======
 
+0.1.7 (2020-03-30)
+------------------
+
+* Allow passing kwargs without specifying headers
+
 0.1.6 (2019-08-06)
 ------------------
 
