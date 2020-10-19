@@ -24,4 +24,4 @@ async def test_basic_usage():
     assert messages[1].origin == 'https://stream.wikimedia.org'
     data_0 = json.loads(messages[0].data)
     data_1 = json.loads(messages[1].data)
-    assert data_0['id'] != data_1['id']
+    assert data_0['meta']['id'] != data_1['meta']['id']
