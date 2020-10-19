@@ -2,6 +2,20 @@
 History
 =======
 
+0.2.0 (2020-10-20)
+------------------
+
+**Breaking Changes**
+
+* Drop Python 3.5 support
+* Add Python 3.8 support
+
+**Non functional changes**
+
+* Clarify the license (Apache Software License 2.0), thanks @fabaff
+* Update dependency packages
+
+
 0.1.7 (2020-03-30)
 ------------------
 

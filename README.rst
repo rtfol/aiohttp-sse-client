@@ -30,14 +30,14 @@ Features
 * Full asyncio support
 * Easy to integrate with other aiohttp based project
 * Auto-reconnect for network issue
-* Support python 3.5.3 and above 
+* Support python 3.6 and above
 
 Usage
 --------
 .. code-block:: python
 
     from aiohttp_sse_client import client as sse_client
-    
+
     async with sse_client.EventSource(
         'https://stream.wikimedia.org/v2/stream/recentchange'
     ) as event_source:
