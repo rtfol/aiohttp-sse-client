@@ -23,7 +23,7 @@ setup(
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
@@ -32,7 +32,7 @@ setup(
     ],
     description="A Server-Sent Event python client base on aiohttp",
     install_requires=requirements,
-    license="MIT license",
+    license="Apache License 2.0",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
     keywords='aiohttp_sse_client',
