@@ -8,6 +8,7 @@ Welcome to SSE Client's documentation!
    readme
    installation
    usage
+   references
    modules
    contributing
    authors
