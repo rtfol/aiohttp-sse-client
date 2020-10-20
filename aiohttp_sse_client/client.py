@@ -41,6 +41,19 @@ class MessageEvent:
 class EventSource:
     """Represent EventSource Interface as an async context manager.
 
+    .. code-block:: python
+
+        from aiohttp_sse_client import client as sse_client
+
+        async with sse_client.EventSource(
+            'https://stream.wikimedia.org/v2/stream/recentchange'
+        ) as event_source:
+            try:
+                async for event in event_source:
+                    print(event)
+            except ConnectionError:
+                pass
+
     .. seealso:: https://www.w3.org/TR/eventsource/#eventsource
     """
     def __init__(self, url: str,
@@ -65,6 +78,8 @@ class EventSource:
         :param on_open: event handler for open event
         :param on_message: event handler for message event
         :param on_error: event handler for error event
+        :param kwargs: keyword arguments will pass to underlying aiohttp get()
+            method.
         """
         self._url = URL(url)
         if option is not None:

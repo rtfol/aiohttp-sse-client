@@ -48,7 +48,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'SSE Client'
-copyright = u"2018-2019, Jason Hu"
+copyright = u"2018-2020, Jason Hu"
 author = u"Jason Hu"
 
 # The version info for the project you're documenting, acts as replacement
