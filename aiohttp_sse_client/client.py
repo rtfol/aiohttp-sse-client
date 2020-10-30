@@ -69,8 +69,7 @@ class EventSource:
 
         :param url: specifies the URL to which to connect
         :param option: specifies the settings, if any,
-            in the form of an Dict[str, Any]. Current only one key supported
-            - with_credentials: bool, specifies CORS mode to `Use Credentials`
+            in the form of an Dict[str, Any]. Reserved for future use
         :param reconnection_time: wait time before try to reconnect in case
             connection broken
         :param session: specifies a aiohttp.ClientSession, if not, create
@@ -82,10 +81,6 @@ class EventSource:
             method.
         """
         self._url = URL(url)
-        if option is not None:
-            self._with_credentials = option.get('with_credentials', False)
-        else:
-            self._with_credentials = False
         self._ready_state = READY_STATE_CONNECTING
 
         if session is not None:
@@ -138,11 +133,6 @@ class EventSource:
     def url(self) -> URL:
         """Return URL to which to connect."""
         return self._url
-
-    @property
-    def with_credentials(self) -> bool:
-        """Return whether CORS mode set to `User Credentials`."""
-        return self._with_credentials
 
     @property
     def ready_state(self) -> int:
