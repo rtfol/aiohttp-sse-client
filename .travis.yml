@@ -12,6 +12,7 @@ cache:
   directories:
   - "$HOME/.cache/pip"
 language: python
+before_install: python -m pip install --upgrade pip
 install: pip install -U tox-travis
 script: travis_wait 30 tox --develop
 deploy:
