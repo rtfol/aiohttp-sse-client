@@ -3,7 +3,9 @@ matrix:
   fast_finish: true
   include:
   - python: '3.6'
-    env: TOXENV=py36
+    env: 
+      - TOXENV=py36
+      - CRYPTOGRAPHY_DONT_BUILD_RUST=1
   - python: '3.7'
     env: TOXENV=py37
   - python: '3.8'
@@ -12,7 +14,9 @@ cache:
   directories:
   - "$HOME/.cache/pip"
 language: python
-before_install: python -m pip install --upgrade pip
+before_install: 
+  - python -m pip install --upgrade pip
+  - pip --version
 install: pip install -U tox-travis
 script: travis_wait 30 tox --develop
 deploy:
