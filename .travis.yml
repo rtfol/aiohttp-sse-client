@@ -4,9 +4,6 @@ matrix:
   include:
   - python: '3.6'
     env: TOXENV=py36
-    before_install: 
-      - python -m pip install --upgrade pip
-      - pip install "cryptography>=3,<3.4" 
   - python: '3.7'
     env: TOXENV=py37
   - python: '3.8'
