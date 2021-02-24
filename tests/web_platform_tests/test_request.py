@@ -102,6 +102,7 @@ async def test_request_post_to_connect():
         WPT_SERVER + 'resources/message.py',
         option={'method': "POST"}
     )
+    await source.connect()
     async for e in source:
         assert e.data == "data"
         break
