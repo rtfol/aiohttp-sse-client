@@ -2,6 +2,12 @@
 History
 =======
 
+0.2.1 (2021-02-27)
+------------------
+
+* Allow sending request with different HTTP methods (by @paulefoe)
+* Migrate to GitHub Actions
+
 0.2.0 (2020-10-20)
 ------------------
 
