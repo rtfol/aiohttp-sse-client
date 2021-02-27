@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from datetime import datetime, timedelta
 
 import pytest
 
@@ -8,9 +7,10 @@ from aiohttp_sse_client import client as sse_client
 
 from .const import WPT_SERVER
 
+
 async def test_rquest_accept():
     """Test EventSource: Accept header.
-    
+
     ..seealso: https://github.com/web-platform-tests/wpt/blob/master/
     eventsource/request-accept.htm
     """
@@ -25,7 +25,7 @@ async def test_rquest_accept():
 
 async def test_rquest_cache_control():
     """Test EventSource: Cache-Control.
-    
+
     ..seealso: https://github.com/web-platform-tests/wpt/blob/master/
     eventsource/request-cache-control.htm
     """
@@ -40,14 +40,14 @@ async def test_rquest_cache_control():
 
 async def test_rquest_redirect():
     """Test EventSource: redirect.
-    
+
     ..seealso: https://github.com/web-platform-tests/wpt/blob/master/
     eventsource/request-redirect.htm
     """
     async def test(status):
         def on_error():
             assert False
-        
+
         def on_open():
             assert source.ready_state == sse_client.READY_STATE_OPEN
 
@@ -68,7 +68,7 @@ async def test_rquest_redirect():
 
 async def test_rquest_status_error():
     """Test EventSource: redirect.
-    
+
     ..seealso: https://github.com/web-platform-tests/wpt/blob/master/
     eventsource/request-status-error.htm
     """
@@ -93,3 +93,17 @@ async def test_rquest_status_error():
     await test(404)
     await test(410)
     await test(503)
+
+
+async def test_request_post_to_connect():
+    """Test EventSource option method for connection.
+    """
+    source = sse_client.EventSource(
+        WPT_SERVER + 'resources/message.py',
+        option={'method': "POST"}
+    )
+    await source.connect()
+    async for e in source:
+        assert e.data == "data"
+        break
+    await source.close()

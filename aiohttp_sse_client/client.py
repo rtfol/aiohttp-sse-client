@@ -69,7 +69,9 @@ class EventSource:
 
         :param url: specifies the URL to which to connect
         :param option: specifies the settings, if any,
-            in the form of an Dict[str, Any]. Reserved for future use
+            in the form of an Dict[str, Any]. Accept the "method" key for
+            specifying the HTTP method with which connection
+            should be established
         :param reconnection_time: wait time before try to reconnect in case
             connection broken
         :param session: specifies a aiohttp.ClientSession, if not, create
@@ -77,8 +79,8 @@ class EventSource:
         :param on_open: event handler for open event
         :param on_message: event handler for message event
         :param on_error: event handler for error event
-        :param kwargs: keyword arguments will pass to underlying aiohttp get()
-            method.
+        :param kwargs: keyword arguments will pass to underlying
+            aiohttp request() method.
         """
         self._url = URL(url)
         self._ready_state = READY_STATE_CONNECTING
@@ -108,6 +110,8 @@ class EventSource:
 
         self._origin = None
         self._response = None
+
+        self._method = 'GET' if option is None else option.get('method', 'GET')
 
     def __enter__(self):
         """Use async with instead."""
@@ -207,7 +211,11 @@ class EventSource:
         headers[hdrs.CACHE_CONTROL] = 'no-cache'
 
         try:
-            response = await self._session.get(self._url, **self._kwargs)
+            response = await self._session.request(
+                self._method,
+                self._url,
+                **self._kwargs
+            )
         except ClientConnectionError:
             if retry <= 0 or self._ready_state == READY_STATE_CLOSED:
                 await self._fail_connect()
