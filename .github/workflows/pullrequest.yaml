@@ -43,10 +43,6 @@ jobs:
       if: matrix.python-version == 3.6
       run: |
         python setup.py sdist bdist_wheel
-    - name: Build wheel
-      if: matrix.python-version == 3.6
-      run: |
-        python setup.py sdist bdist_wheel
     - name: Publish distribution 📦 to Test PyPI
       if: matrix.python-version == 3.6
       uses: pypa/gh-action-pypi-publish@master
