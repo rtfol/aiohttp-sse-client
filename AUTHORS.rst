@@ -12,3 +12,4 @@ Contributors
 
 * Ron Serruya @Ronserruya
 * tjstub @tjstub
+* Pavel Filatov @paulefoe
