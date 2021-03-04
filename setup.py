@@ -21,7 +21,8 @@ setup(
     author="Jason Hu",
     author_email='awaregit@gmail.com',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
+        'Framework :: AsyncIO',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
         'Natural Language :: English',
@@ -29,6 +30,8 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Topic :: Internet :: WWW/HTTP',
     ],
     description="A Server-Sent Event python client base on aiohttp",
     install_requires=requirements,
@@ -42,6 +45,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/rtfol/aiohttp-sse-client',
-    version='0.2.0',
+    version='0.2.1',
     zip_safe=False,
 )
