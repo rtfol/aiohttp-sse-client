@@ -6,7 +6,7 @@ from datetime import timedelta
 from typing import Optional, Dict, Any
 
 import attr
-from aiohttp import hdrs, ClientSession, ClientConnectionError, ClientPayloadError, ClientConnectorError
+from aiohttp import hdrs, ClientSession, ClientPayloadError, ClientConnectionError, ClientConnectorError
 from multidict import MultiDict
 from yarl import URL
 
@@ -185,12 +185,12 @@ class EventSource:
             self._ready_state = READY_STATE_CONNECTING
             if self._on_error:
                 self._on_error()
-            self._reconnection_time *= 2
             _LOGGER.debug('wait %s seconds for retry',
                           self._reconnection_time.total_seconds())
             await asyncio.sleep(
                 self._reconnection_time.total_seconds())
-            await self.connect()
+            self._reconnection_time *= 2
+            await self.connect(self._max_connect_retry)
         raise StopAsyncIteration
 
     async def connect(self, retry=0):
@@ -229,11 +229,11 @@ class EventSource:
                 self._ready_state = READY_STATE_CONNECTING
                 if self._on_error:
                     self._on_error()
-                self._reconnection_time *= 2
                 _LOGGER.debug('wait %s seconds for retry',
                               self._reconnection_time.total_seconds())
                 await asyncio.sleep(
                     self._reconnection_time.total_seconds())
+                self._reconnection_time *= 2
                 await self.connect(retry - 1)
             return
 
@@ -341,3 +341,18 @@ class EventSource:
                 pass
 
         pass
+
+# if __name__ == '__main__':
+#     import asyncio
+#
+#
+#     async def main():
+#         async with EventSource("http://10.10.10.103:30106/api/v1/stream-events/", max_connect_retry=10) as event_source:
+#             try:
+#                 async for event in event_source:
+#                     print(event)
+#             except ConnectionError:
+#                 pass
+#
+#
+#     asyncio.run(main())
