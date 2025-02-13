@@ -13,10 +13,6 @@ with open('HISTORY.rst') as history_file:
 
 requirements = ['aiohttp>=3', 'attrs', 'multidict', 'yarl', ]
 
-setup_requirements = ['pytest-runner', ]
-
-test_requirements = ['pytest', ]
-
 setup(
     author="Jason Hu",
     author_email='awaregit@gmail.com',
@@ -41,9 +37,6 @@ setup(
     keywords='aiohttp_sse_client',
     name='aiohttp-sse-client',
     packages=find_packages(include=['aiohttp_sse_client']),
-    setup_requires=setup_requirements,
-    test_suite='tests',
-    tests_require=test_requirements,
     url='https://github.com/rtfol/aiohttp-sse-client',
     version='0.2.1',
     zip_safe=False,
